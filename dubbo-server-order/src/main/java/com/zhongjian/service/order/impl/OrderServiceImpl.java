@@ -526,8 +526,8 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 						}
 						if (ext.equals(1)) {
 							// 配送券
-							deliverfeeBigDecimal = BigDecimal.ZERO;
-							deliverfee = "￥0";
+							deliverfeeBigDecimal = new BigDecimal("3");
+							deliverfee = "￥3";
 						}
 
 						couponContent = "-￥" + couponPrice.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
