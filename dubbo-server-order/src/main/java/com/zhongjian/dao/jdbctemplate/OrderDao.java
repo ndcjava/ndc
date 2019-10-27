@@ -585,8 +585,8 @@ public class OrderDao extends MongoDBDaoBase {
 	}
 	
 	public List<Integer> getRids(Integer marketId) {
-		String sql = "SELECT rid  FROM hm_rider_user where marketid = ?";
-		List<Integer> res = jdbcTemplate.queryForList(sql,Integer.class, marketId);
+		String sql = "SELECT rid  FROM hm_rider_user where login_token is NOT NULL";
+		List<Integer> res = jdbcTemplate.queryForList(sql,Integer.class);
 		return res;
 	}
 	

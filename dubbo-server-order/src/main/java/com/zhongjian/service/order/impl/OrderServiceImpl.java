@@ -1330,7 +1330,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		String login_token = orderDao.getStoreToken(sid);
 		String phone = orderDao.getPhone(sid);
 		BigDecimal balance = orderDao.getBalanceByPid(sid);
-		BigDecimal moneyDecimal = balance.divide(new BigDecimal("3"));
+		BigDecimal moneyDecimal = balance.divide(new BigDecimal("3"),0, BigDecimal.ROUND_HALF_UP);
 		String money = String.valueOf(moneyDecimal.intValue());
 		Integer bankId = getBankId(sid, phone);
 		toWithdraw(login_token, bankId, money);
