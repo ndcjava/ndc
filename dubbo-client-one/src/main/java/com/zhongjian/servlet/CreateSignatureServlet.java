@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.zhongjian.dto.common.CommonMessageEnum;
+import com.zhongjian.dto.common.ResultDTO;
 import com.zhongjian.dto.common.ResultUtil;
 import org.apache.log4j.Logger;
 
@@ -23,6 +24,7 @@ import com.zhongjian.service.pay.GenerateSignatureService;
 import com.zhongjian.service.user.UserService;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @WebServlet(value = "/v1/pay/createsign", asyncSupported = true)
@@ -70,13 +72,12 @@ public class CreateSignatureServlet extends HttpServlet {
 					String result =  GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.SERVERERR));
 					try {
 					Integer uid = (Integer) request.getAttribute("uid");
-					String business = formData.get("business");// 1.RIO（订单）
-					Integer orderid = Integer.valueOf(formData.get("orderid"));
+					String business = formData.get("business") == null?"RIO":formData.get("business");
+					Integer orderid = Integer.valueOf(formData.get("roid"));
 					// 0 支付宝 1微信 2微信小程序
-					Integer payType = Integer.valueOf(formData.get("paytype"));
-					String openId = formData.get("openid");
+					String payType = formData.get("type");
 					String realIp = this.getRealIp(request);
-					result = CreateSignatureServlet.this.handle(uid, business, orderid, payType, openId, realIp);
+					result = CreateSignatureServlet.this.handle(uid, business, orderid, payType, realIp);
 					// 返回数据
 					
 						ResponseHandle.wrappedResponse(asyncContext.getResponse(), result);
@@ -100,15 +101,15 @@ public class CreateSignatureServlet extends HttpServlet {
 
 	}
 
-	private String handle(Integer uid, String business, Integer orderId, Integer payType, String openId,
+	private String handle(Integer uid, String business, Integer orderId, String payType,
 			String realIp) {
 		if (uid == 0) {
 			return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.USER_IS_NULL));
 		}
 		//线上地址校验
-//		if (!orderService.orderCheck(orderId, business)) {
-//			return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.ORDER_ADDRESSFAIL));
-//		}
+		if (!orderService.orderCheck(orderId, business)) {
+			return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.ORDER_ADDRESSFAIL));
+		}
 		
 		Map<String, Object> orderDetail = orderService.getOutTradeNoAndAmount(uid, orderId, business);
 		if (orderDetail == null) {
@@ -118,21 +119,36 @@ public class CreateSignatureServlet extends HttpServlet {
 			String totalPrice = String.valueOf(orderDetail.get("totalPrice"));
 			String body = (String) orderDetail.get("body");
 			String subject = (String) orderDetail.get("subject");
-			if (payType == 0) {
+			HashMap<String, Object> result = new HashMap<>();
+			result.put("roid", String.valueOf(orderId));
+			result.put("riderSn", out_trade_no);
+			result.put("type", payType);
+			if ("aliwap".equals(payType)) {
 				//支付宝
-				return  GsonUtil.GsonString(ResultUtil.getSuccess(generateSignatureService.getAliSignature(out_trade_no, totalPrice,subject)));
-			} else if (payType == 1) {
+				String sign = generateSignatureService.getAliSignature(out_trade_no, totalPrice,subject);
+				result.put("sign", sign);
+				ResultDTO<Object> success = ResultUtil.getSuccess(result);
+				success.setFlag(null);
+				success.setTotal(null);
+				return  GsonUtil.GsonString(success);
+			} else if ("wechat".equals(payType)) {
 				//微信app支付
-				return GsonUtil.GsonString(
-						ResultUtil.getSuccess(generateSignatureService.getWxAppSignature(out_trade_no, totalPrice, "", realIp, 0,body)));
-			} else if (payType == 2) {
+				result.put("sign", generateSignatureService.getWxAppSignature(out_trade_no, totalPrice, "", realIp, 0,body));
+				ResultDTO<Object> success = ResultUtil.getSuccess(result);
+				success.setFlag(null);
+				success.setTotal(null);
+				return GsonUtil.GsonString(success);
+			} else if ("applets".equals(payType)) {
 				//小程序支付
 				String appletsOpenid = userService.getUserBeanById(uid).getAppletsOpenid();
 				if (appletsOpenid == null) {
 					return GsonUtil.GsonString(ResultUtil.getFail(null));
 				}
-				return GsonUtil.GsonString(
-						ResultUtil.getSuccess(generateSignatureService.getWxAppSignature(out_trade_no, totalPrice, appletsOpenid, realIp, 1,body)));
+				result.put("sign", generateSignatureService.getWxAppSignature(out_trade_no, totalPrice, appletsOpenid, realIp, 1,body));
+				ResultDTO<Object> success = ResultUtil.getSuccess(result);
+				success.setFlag(null);
+				success.setTotal(null);
+				return GsonUtil.GsonString(success);
 			} else {
 				//微信银行支付
 				return generateSignatureService.getYinHangWxApp(out_trade_no, totalPrice, realIp,body);

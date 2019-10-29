@@ -54,7 +54,7 @@ public class WxAppletNotifyServlet extends HttpServlet {
 				String totalAmount = notifyMap.get("total_fee");
 				BigDecimal totalAmountBigDecimal = new BigDecimal(totalAmount);
 				String transTotalAmount = totalAmountBigDecimal.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
-				if (orderService.handleROrder(tradeNo, transTotalAmount,"wechat")) {
+				if (orderService.handleROrder(tradeNo, transTotalAmount,"applets")) {
 					response.getWriter().write(
 							"<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>");
 						return;

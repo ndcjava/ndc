@@ -1111,7 +1111,8 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			double longitude1 = Double.parseDouble((String) orderAddress.get("longitude"));
 			double latitude1 = Double.parseDouble((String) orderAddress.get("latitude"));
 			double distance = DistanceUtils.getDistance(longitude, latitude, longitude1, latitude1);
-			if (distance <= 0.6) {
+			if (distance <= 3.6) {
+				orderDao.updateServiceTime(orderId);
 				return true;
 			} else {
 				return false;

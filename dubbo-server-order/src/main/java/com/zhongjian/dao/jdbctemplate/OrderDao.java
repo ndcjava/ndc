@@ -407,11 +407,17 @@ public class OrderDao extends MongoDBDaoBase {
 		return mRatio;
 	}
 
-	// 获取菜场比率(默认为1，后期翻倍亦可)
+	// 获取平台比率(默认为1，后期翻倍亦可)
 	public BigDecimal getRatio() {
 		String sql = "SELECT ratio from hm_ratio";
 		BigDecimal ratio = jdbcTemplate.queryForObject(sql, BigDecimal.class);
 		return ratio;
+	}
+	//推迟预约时间
+	public void updateServiceTime(Integer orderId) {
+		int servieTime = DateUtil.getCurrentTime() + 48 * 60;
+		String sql = "update hm_rider_order set service_time = ? where id = ?";
+		jdbcTemplate.update(sql, servieTime,orderId);
 	}
 
 ////-----------------------------------------------------------------------------------------------
