@@ -420,6 +420,17 @@ public class OrderDao extends MongoDBDaoBase {
 		jdbcTemplate.update(sql, servieTime,orderId);
 	}
 
+	public Integer queryCouponLevel(Integer couponid) {
+		String sql = "select level from hm_user_coupon where id = ?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { couponid }, Integer.class);
+	}
+	
+	public void activeCoupon(Integer uid,Integer level) {
+		int endTime = DateUtil.getCurrentTime() + 7 * 24 * 3600;
+		String sql = "update hm_user_coupon set end_time = ?,is_active = 1 where uid = ? and level = ?";
+		jdbcTemplate.update(sql, endTime,uid,level);
+	}
+	
 ////-----------------------------------------------------------------------------------------------
 //	public List<Integer> selectOrder1() {
 //		String sql = " SELECT hr.id from hm_rider_order hr,hm_order ho"

@@ -1006,6 +1006,13 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 						integralVipDao.addIntegralLog(uid, integral, 0, currentTime);
 					}
 				}
+				Object couponidObj = orderInfo.get("couponid");
+				if (couponidObj != null) {
+					Integer couponid = (Integer) couponidObj;
+					Integer level = orderDao.queryCouponLevel(couponid);
+					Integer nextLevel = level + 1;
+					orderDao.activeCoupon(uid, nextLevel);
+				}
 				// 异步处理
 				addressTask.setAddressTask(addressId, uid);
 				addressTask.setLateMarket(marketId, uid);
