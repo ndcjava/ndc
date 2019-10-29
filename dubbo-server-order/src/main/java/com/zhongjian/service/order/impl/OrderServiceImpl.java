@@ -134,11 +134,13 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		// 代码配置获取
 		String memberDeliverfee = propUtil.getMemberDeliverfee();
 		String memberSelfMentionDeliverfee = propUtil.getSelfmentionDeliverfee();
+		String novipmemberSelfMentionDeliverfee = propUtil.getNovipselfmentionDeliverfee();
 		String originalfee = propUtil.getOriginalfee();
 		marketId = orderDao.getMarketId(sids[0]);
 		if (marketId.equals(190)) {
 			originalfee = "0";
 			memberSelfMentionDeliverfee = "0";
+			novipmemberSelfMentionDeliverfee = "0";
 		}
 		//根据菜场改originalfee（菜场运费）
 		//根据菜场改memberSelfMentionDeliverfee（菜场自提费）
@@ -440,17 +442,21 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			needPay = needPay.subtract(vipFavourable);
 			deliverfee = "￥" + memberDeliverfee;
 			deliverfeeBigDecimal = new BigDecimal(memberDeliverfee);
-
-			if ("1".equals(isSelfMention)) {
+			
+		}
+		if ("1".equals(isSelfMention)) {
+			if (vipStatus == 1) {
 				deliverfee = "￥" + memberSelfMentionDeliverfee;
-				deliverfeeBigDecimal = new BigDecimal(memberSelfMentionDeliverfee);
-				if (toCreateOrder) {
-					storeOrders.put("rider_status", 3);
-					storeOrders.put("self_sufficiency", 1);
-				}
+				deliverfeeBigDecimal = new BigDecimal(memberSelfMentionDeliverfee);	
+			}else {
+				deliverfee = "￥" + novipmemberSelfMentionDeliverfee;
+				deliverfeeBigDecimal = new BigDecimal(novipmemberSelfMentionDeliverfee);	
+			}
+			if (toCreateOrder) {
+				storeOrders.put("rider_status", 3);
+				storeOrders.put("self_sufficiency", 1);
 			}
 		}
-
 		boolean todayCouponUse = orderDao.checkCouponOrderByUid(uid);
 		BigDecimal priceForIntegralor = needPay.add(deliverfeeBigDecimal);
 
@@ -524,7 +530,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 							vipFavourRiderOrder = vipFavourable;
 							needPay = BigDecimal.ZERO;
 						}
-						if (ext.equals(1)) {
+						if (ext.equals(1) && deliverfeeBigDecimal.compareTo(new BigDecimal("3")) >0) {
 							// 配送券
 							deliverfeeBigDecimal = new BigDecimal("3");
 							deliverfee = "￥3";
