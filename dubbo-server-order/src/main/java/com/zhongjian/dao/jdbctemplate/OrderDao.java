@@ -414,12 +414,24 @@ public class OrderDao extends MongoDBDaoBase {
 		return ratio;
 	}
 	//推迟预约时间
-	public void updateServiceTime(Integer orderId) {
-		int servieTime = DateUtil.getCurrentTime() + 48 * 60;
+	public void updateServiceTime(Integer orderId,Integer updateServiceTime) {
+		int servieTime = updateServiceTime;
 		String sql = "update hm_rider_order set service_time = ? where id = ?";
 		jdbcTemplate.update(sql, servieTime,orderId);
 	}
 
+	//查询预约时间
+	public Integer getServiceTime(Integer orderId) {
+		String sql = "select service_time hm_rider_order where id = ?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { orderId }, Integer.class);
+	}
+	
+	//根据订单id查询菜场关门时间
+	public String getEndTimeByOrderId(Integer orderId) {
+		String sql = "SELECT hm_market.endtime from hm_rider_order,hm_market WHERE hm_rider_order.marketid = hm_market.id AND hm_rider_order.id = ?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { orderId }, String.class);
+	}
+	
 	public Integer queryCouponLevel(Integer couponid) {
 		String sql = "select level from hm_user_coupon where id = ?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { couponid }, Integer.class);

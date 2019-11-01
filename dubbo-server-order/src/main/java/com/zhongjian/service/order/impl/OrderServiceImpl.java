@@ -6,6 +6,10 @@ import com.zhongjian.common.constant.FinalDatas;
 import com.zhongjian.commoncomponent.PropUtil;
 import com.zhongjian.dao.entity.order.address.OrderAddressBean;
 import com.zhongjian.dao.entity.order.address.OrderAddressOrderBean;
+import com.zhongjian.dao.entity.order.sf.SFOrder;
+import com.zhongjian.dao.entity.order.sf.SFOrderDetail;
+import com.zhongjian.dao.entity.order.sf.SFProductDetail;
+import com.zhongjian.dao.entity.order.sf.SFReceive;
 import com.zhongjian.dao.entity.order.shopown.OrderShopownBean;
 import com.zhongjian.dao.framework.impl.HmBaseService;
 import com.zhongjian.dao.jdbctemplate.AddressDao;
@@ -28,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,10 +43,13 @@ import java.util.Iterator;
 import com.zhongjian.util.DateUtil;
 import com.zhongjian.util.DistanceUtils;
 import com.zhongjian.util.HttpConnectionPoolUtil;
+import com.zhongjian.util.MD5Util;
 import com.zhongjian.util.RandomUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -969,6 +977,9 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			}
 			return true;
 		} else {
+			//接入顺丰派单
+			
+			
 			String dataNo = out_trade_no.substring(6);
 			if (orderDao.updateROStatusToSuccess(dataNo, currentTime, payType, out_trade_no)) {
 				Map<String, Object> rorderDetail = orderDao.getROrderIdByOutTradeNo(out_trade_no);
@@ -1119,7 +1130,31 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			double latitude1 = Double.parseDouble((String) orderAddress.get("latitude"));
 			double distance = DistanceUtils.getDistance(longitude, latitude, longitude1, latitude1);
 			if (distance <= 3.6) {
-				orderDao.updateServiceTime(orderId);
+				//时间是否需要纠正
+				boolean flag = false;
+				Integer serviceTime = orderDao.getServiceTime(orderId);
+				Integer finalTime = serviceTime;
+				Integer minServiceTime = DateUtil.getCurrentTime() + 48 * 60;
+				if (serviceTime < minServiceTime) {
+					//不足48分钟调整时间
+					finalTime = minServiceTime;
+					flag = true;
+				}
+				String endTime = orderDao.getEndTimeByOrderId(orderId);
+				//不送单时间的
+				LocalDateTime marketEndServiceTime = DateUtil.getHowManyMinutesAfter(endTime,48);
+				LocalDateTime finalLocalDateTime = LocalDateTime.ofEpochSecond(finalTime,0, ZoneOffset.ofHours(8));
+				if (DateUtil.isBeforeGtAfter(finalLocalDateTime, marketEndServiceTime)) {
+					return false;
+				}
+				LocalDateTime marketStartServiceTime = DateUtil.getHowManyMinutesAfter("8:48",0);
+				if (DateUtil.isBeforeGtAfter(marketStartServiceTime, finalLocalDateTime)) {
+					finalTime = DateUtil.changeUnixTime(finalTime, "08:48:00");
+					flag = true;
+				}
+				if (flag) {
+					orderDao.updateServiceTime(orderId, finalTime);
+				}
 				return true;
 			} else {
 				return false;
@@ -1331,6 +1366,52 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		hashMap.put("money", money);
 	    HttpConnectionPoolUtil.post(propUtil.getOrderApplyUrl(), httpPost, hashMap);
 		
+	}
+	
+	public void createSFOrder(String shopId,String orderNo,Integer totalPrice ,Integer isAppoint,Integer expectTime,SFReceive sfReceive) {
+		Integer cTime = DateUtil.getCurrentTime();
+		String APP_ID = "1551626517";
+		String APP_SECRET = "de8c5543f850f236ac5ebf7d51907ede";
+		String api = "https://commit-openic.sf-express.com/open/api/external/createorder";
+		SFOrder sfOrder = new SFOrder();
+		sfOrder.setDev_id("1551626517");
+		sfOrder.setShop_id(shopId);
+		sfOrder.setShop_type(1);
+		sfOrder.setShop_order_id(orderNo);
+		sfOrder.setOrder_source("倪的菜");
+		sfOrder.setLbs_type(2);
+		sfOrder.setPay_type(1);
+		sfOrder.setOrder_time(cTime - 2 * 60);
+		sfOrder.setPush_time(cTime);
+		sfOrder.setVersion(17);
+		sfOrder.setIs_insured(0);
+		sfOrder.setReturn_flag(1);
+		sfOrder.setExpect_time(expectTime);
+		sfOrder.setIs_appoint(isAppoint);
+		sfOrder.setReceive(sfReceive);
+		SFOrderDetail sfOrderDetail = new SFOrderDetail();
+		sfOrderDetail.setProduct_type(6);
+		sfOrderDetail.setProduct_type_num(3);
+		sfOrderDetail.setProduct_num(8);
+		sfOrderDetail.setWeight_gram(2000);
+		sfOrderDetail.setTotal_price(totalPrice);
+		sfOrderDetail.setProduct_detail(new ArrayList<SFProductDetail>());
+		sfOrder.setOrder_detail(sfOrderDetail);
+		String postJSONString = JSON.toJSONString(sfOrder);
+		String toSign = postJSONString + "&" + APP_ID + "&" + APP_SECRET;
+		String md5Result = MD5Util.MD5Encode(toSign, "utf-8");
+		java.util.Base64.Encoder be = java.util.Base64.getEncoder();
+		String signResult = "";
+        try {
+			signResult = be.encodeToString(md5Result.getBytes("utf-8"));
+		} catch (UnsupportedEncodingException e) {
+		}
+		if (!"".equals(signResult)) {
+			 String url = api + "?sign=" + signResult;
+			 HttpPost httpPost = new HttpPost(url);
+			 String result = HttpConnectionPoolUtil.postJSON(url, httpPost, postJSONString);
+			 System.out.println(result);
+		}
 	}
 	
 	@Override

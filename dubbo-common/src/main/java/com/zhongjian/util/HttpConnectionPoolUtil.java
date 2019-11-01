@@ -39,6 +39,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -249,7 +250,36 @@ public class HttpConnectionPoolUtil {
 		}
 		return result;
 	}
-
+	public static String postJSON(String url, HttpPost httpPost,String json) {
+		setRequestConfig(httpPost);
+		CloseableHttpResponse response = null;
+		InputStream in = null;
+		String result = null;
+		StringEntity requestEntity = new StringEntity(json,"utf-8");
+        requestEntity.setContentEncoding("UTF-8");
+        httpPost.setHeader("Content-type", "application/json");
+        httpPost.setEntity(requestEntity);
+		try {
+			response = getHttpClient(url).execute(httpPost, HttpClientContext.create());
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				in = entity.getContent();
+				result = IOUtils.toString(in, "utf-8");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (in != null)
+					in.close();
+				if (response != null)
+					response.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
 	/**
 	 * 关闭连接池
 	 */
