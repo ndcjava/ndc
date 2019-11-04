@@ -422,7 +422,7 @@ public class OrderDao extends MongoDBDaoBase {
 
 	//查询预约时间
 	public Integer getServiceTime(Integer orderId) {
-		String sql = "select service_time hm_rider_order where id = ?";
+		String sql = "select service_time from hm_rider_order where id = ?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { orderId }, Integer.class);
 	}
 	
