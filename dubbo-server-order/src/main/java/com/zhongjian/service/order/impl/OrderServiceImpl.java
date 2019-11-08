@@ -145,7 +145,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		String novipmemberSelfMentionDeliverfee = propUtil.getNovipselfmentionDeliverfee();
 		String originalfee = propUtil.getOriginalfee();
 		marketId = orderDao.getMarketId(sids[0]);
-		if (marketId.equals(190)) {
+		if (marketId.equals(190) || marketId.equals(285)) {
 			originalfee = "0";
 			memberSelfMentionDeliverfee = "0";
 			novipmemberSelfMentionDeliverfee = "0";
