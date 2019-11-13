@@ -90,8 +90,9 @@ public class CreateOrderServlet extends HttpServlet {
 							asyncContext.complete();
 							return;
 						}
+						String deviceId = formData.get("device_no");
 						result = CreateOrderServlet.this.handle(uid, sids, type, extra, isSelfMention, addressId,
-								unixTime, status);
+								unixTime, status,deviceId);
 						ResponseHandle.wrappedResponse(asyncContext.getResponse(), result);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -115,7 +116,7 @@ public class CreateOrderServlet extends HttpServlet {
 	}
 
 	private String handle(Integer uid, Integer[] sids, String type, Integer extra, String isSelfMention,
-			Integer addressId, Integer unixTime, Integer status) {
+			Integer addressId, Integer unixTime, Integer status,String deviceId) {
 		if (uid == 0) {
 			return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.USER_IS_NULL));
 		}
@@ -145,7 +146,7 @@ public class CreateOrderServlet extends HttpServlet {
 		try {
 			//真实下单
 			reslutMap = orderService.previewOrCreateOrder(uid, sids, type, extra, isSelfMention, true, addressId,
-					unixTime, isAppointment);
+					unixTime, isAppointment, deviceId);
 			//造单开关
 			if ("on".equals(propUtil.getCreateOrderSwitch()) && isAppointment == 0) {
 				Integer sid = sids[0];

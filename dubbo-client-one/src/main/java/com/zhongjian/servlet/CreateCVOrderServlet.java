@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.zhongjian.dto.common.CommonMessageEnum;
 import com.zhongjian.dto.common.ResultUtil;
 import com.zhongjian.exception.NDCException;
+import com.zhongjian.exception.NDCException.ClickException;
 import com.zhongjian.exception.NDCException.CouponException;
 import com.zhongjian.exception.NDCException.DeleteBasketExcpetion;
 import com.zhongjian.exception.NDCException.IntegralException;
@@ -114,7 +115,10 @@ public class CreateCVOrderServlet extends HttpServlet {
 				return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.USER_INTEGRAL_ERR));
 			}else if (e instanceof CouponException) {
 				return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.USER_COUPON_ERR));
+			}else if (e instanceof ClickException) {
+				return GsonUtil.GsonString(ResultUtil.getFail(CommonMessageEnum.USER_CLICK_FARMING));
 			}
+			
 		}
 
 		return GsonUtil.GsonString(ResultUtil.getSuccess(reslutMap));

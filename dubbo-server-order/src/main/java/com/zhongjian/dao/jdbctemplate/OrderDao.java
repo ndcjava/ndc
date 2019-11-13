@@ -78,21 +78,21 @@ public class OrderDao extends MongoDBDaoBase {
 	}
 
 	public boolean checkFirstOrderByUid(Integer uid) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND (pay_status = 0 or pay_status = 1)";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND (pay_status = 0 or pay_status = 1) AND is_delete = 0";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { uid, DateUtil.getTodayZeroTime() },
 				Integer.class);
 		return num > 0 ? false : true;
 	}
 
 	public boolean checkFirstPayOrderByUid(Integer uid) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 1";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 1 and is_delete = 0";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { uid, DateUtil.getTodayZeroTime() },
 				Integer.class);
 		return num > 0 ? true : false;
 	}
 
 	public Integer checkFirstToPayOrderByUid(Integer uid) {
-		String sql = "SELECT id FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 0";
+		String sql = "SELECT id FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 0 AND is_delete = 0";
 		Integer orderId = null;
 		try {
 			orderId = jdbcTemplate.queryForObject(sql, new Object[] { uid, DateUtil.getTodayZeroTime() },
@@ -103,14 +103,14 @@ public class OrderDao extends MongoDBDaoBase {
 	}
 
 	public Integer checkToPayNum(Integer uid) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 0";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime  > ? AND  pay_status = 0 AND is_delete = 0";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { uid, DateUtil.getTodayZeroTime() },
 				Integer.class);
 		return num;
 	}
 
 	public boolean checkCouponOrderByUid(Integer uid) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime > ? AND (pay_status = 0 or pay_status = 1) AND couponid is not null";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order where uid = ? AND ctime > ? AND (pay_status = 0 or pay_status = 1) AND couponid is not null AND is_delete = 0";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { uid, DateUtil.getTodayZeroTime() },
 				Integer.class);
 		return num > 0 ? false : true;
@@ -118,7 +118,7 @@ public class OrderDao extends MongoDBDaoBase {
 
 	// 查看优惠券数量
 	public Integer getCouponsNumCanUse(Integer uid) {
-		String sql = "SELECT COUNT(1) from hm_user_coupon where uid = ? and state = 0 and model = 1";
+		String sql = "SELECT COUNT(1) from hm_user_coupon where uid = ? and state = 0 and model = 1 and is_active = 1";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { uid }, Integer.class);
 		return num;
 	}
@@ -217,8 +217,8 @@ public class OrderDao extends MongoDBDaoBase {
 	public Integer addHmRiderOrder(Map<String, Object> map) {
 		final String sql = "INSERT INTO hm_rider_order (rider_sn,order_sn,uid,marketid,rid,pay_status,address_id,rider_pay,"
 				+ "couponid,type_pay,totalPrice,pay_time,service_time,order_time,finish_time,ctime,integral,is_appointment,end_time,"
-				+ "original_price,out_trade_no,coupon_price,market_activity_price,store_activity_price,vip_relief,remark,test,rider_status,self_sufficiency) VALUES (?,?,?,"
-				+ "?,?,?,?,?,?,null,?,?,?,null,null,?,?,?,null,?,?,?,?,?,?,null,null,?,?)";
+				+ "original_price,out_trade_no,coupon_price,market_activity_price,store_activity_price,vip_relief,remark,test,rider_status,self_sufficiency,deviceId) VALUES (?,?,?,"
+				+ "?,?,?,?,?,?,null,?,?,?,null,null,?,?,?,null,?,?,?,?,?,?,null,null,?,?,?)";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		jdbcTemplate.update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
@@ -246,6 +246,7 @@ public class OrderDao extends MongoDBDaoBase {
 				ps.setBigDecimal(21, (BigDecimal) map.get("vip_relief"));
 				ps.setInt(22, (Integer) map.get("rider_status"));
 				ps.setInt(23, (Integer) map.get("self_sufficiency"));
+				ps.setString(24, (String) map.get("deviceId"));
 				return ps;
 			}
 		}, keyHolder);
@@ -256,7 +257,7 @@ public class OrderDao extends MongoDBDaoBase {
 		String sql = " SELECT rid,count(rid) sum FROM hm_rider_order"
 				+ " where rid IN (SELECT rid FROM hm_rider_user where state = 1 "
 				+ "AND status=1 AND is_order = 1 AND marketid = ? ) AND rider_status in (0,1) "
-				+ "AND ctime > ? GROUP BY rid ORDER BY sum";
+				+ "AND ctime > ? AND is_delete = 0 GROUP BY rid ORDER BY sum";
 		List<Map<String, Object>> res = jdbcTemplate.queryForList(sql, marketId, todayTimeZone);
 		return res;
 	}
@@ -349,7 +350,7 @@ public class OrderDao extends MongoDBDaoBase {
 
 	// 查看优惠券数量
 	public Double getVipRelief(Integer uid, Integer todayTimeZone) {
-		String sql = "SELECT SUM(vip_relief) FROM hm_rider_order WHERE uid = ? AND (pay_status = 0 OR pay_status = 1) AND ctime > ?";
+		String sql = "SELECT SUM(vip_relief) FROM hm_rider_order WHERE uid = ? AND (pay_status = 0 OR pay_status = 1) AND ctime > ? AND is_delete = 0";
 		Double num = jdbcTemplate.queryForObject(sql, new Object[] { uid, todayTimeZone }, Double.class);
 		return num;
 	}
@@ -441,6 +442,20 @@ public class OrderDao extends MongoDBDaoBase {
 		int endTime = DateUtil.getCurrentTime() + 7 * 24 * 3600;
 		String sql = "update hm_user_coupon set end_time = ?,is_active = 1 where uid = ? and level = ?";
 		jdbcTemplate.update(sql, endTime,uid,level);
+	}
+	
+	
+	//防刷单判断
+	public boolean marketClickfarming (String deviceId) {
+		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND  market_activity_price IS NOT NULL";
+		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { deviceId,DateUtil.getTodayZeroTime() }, Integer.class);
+		return num > 1?true:false;
+	}
+	
+	public boolean couponClickfarming (String deviceId) {
+		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND coupon_price IS NOT NULL";
+		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { deviceId,DateUtil.getTodayZeroTime() }, Integer.class);
+		return num > 1?true:false;
 	}
 	
 ////-----------------------------------------------------------------------------------------------

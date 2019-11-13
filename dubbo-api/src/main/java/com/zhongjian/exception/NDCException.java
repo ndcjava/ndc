@@ -17,5 +17,10 @@ public class NDCException extends Exception {
 	public static class CouponException extends NDCException {
 
 	}
+	
+	// 刷单异常
+	public static class ClickException extends NDCException {
+
+	}
 
 }

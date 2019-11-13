@@ -11,5 +11,6 @@
             uid = #{uid,jdbcType=INTEGER}
         AND ctime > #{ctime,jdbcType=INTEGER}
         AND pay_status IN (0, 1)
+        AND is_delete = 0
 </select>
 </mapper>

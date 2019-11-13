@@ -149,7 +149,7 @@ public class PreviewOrderServlet extends HttpServlet {
 		cartAddressQueryDTO.setUid(uid);
 		cartAddressQueryDTO.setMarketId(Integer.valueOf(marketIdString));
 		CartAddressResultDTO address = addressServie.previewOrderAddress(cartAddressQueryDTO);
-		Map<String, Object> orderDetail = orderService.previewOrCreateOrder(uid, sids, type, extra, isSelfMention, false, null, null, isAppointment);
+		Map<String, Object> orderDetail = orderService.previewOrCreateOrder(uid, sids, type, extra, isSelfMention, false, null, null, isAppointment,null);
 		//请求服务获取预览订单数据--end
 		orderDetail.put("serverTime", serverTime);
 		orderDetail.put("address", address);

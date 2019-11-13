@@ -93,9 +93,24 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> previewOrCreateOrder(Integer uid, Integer[] sids, String type, Integer extra,
-			String isSelfMention, boolean toCreateOrder, Integer addressId, Integer unixTime, Integer isAppointment)
+			String isSelfMention, boolean toCreateOrder, Integer addressId, Integer unixTime, Integer isAppointment,String deviceId)
 			throws NDCException {
-
+		boolean marketClick = false;
+		if (toCreateOrder && deviceId != null) {
+			//防刷单
+			//1.优惠券
+			if ("2".equals(type)) {
+				if (orderDao.couponClickfarming(deviceId)) {
+					throw new NDCException.ClickException();
+				}
+			//2.菜场活动刷单
+			}else if ("0".equals(type)) {
+				if (orderDao.marketClickfarming(deviceId)) {
+					marketClick = true;
+				}
+			}
+		}
+		
 		Integer isVIp = 0;
 		String vipFavour = "";
 
@@ -166,6 +181,11 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			storeOrders = new HashMap<String, Object>();
 			storeOrders.put("rider_status", 0);
 			storeOrders.put("self_sufficiency", 0);
+			if (deviceId != null) {
+				storeOrders.put("deviceId", deviceId);
+			}else {
+				storeOrders.put("deviceId", "");
+			}
 			storeIds = new ArrayList<String>();
 		}
 
@@ -328,7 +348,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		BigDecimal priceForCoupon = needPay;
 		// 检测市场活动--start
 		Map<String, Object> marketActivtiy = marketDao.getMarketActivtiy(marketId);
-		if (marketActivtiy != null) {
+		if (marketActivtiy != null && !marketClick) {
 			showMarketActivity = true;
 			String rule = (String) marketActivtiy.get("rule");
 			int upLimit = (int) marketActivtiy.get("up_limit");

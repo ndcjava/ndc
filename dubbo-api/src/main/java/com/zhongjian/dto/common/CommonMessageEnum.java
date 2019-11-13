@@ -22,6 +22,7 @@ public enum CommonMessageEnum {
     USER_IS_NULL("用户不存在", 11001),
     USER_INTEGRAL_ERR("积分不够", 11008),
     USER_COUPON_ERR("优惠券已失效", 11009),
+    USER_CLICK_FARMING("您的行为可能涉及恶意刷单", 11010),
     SHOP_CHANGE("商户状态变化", 12001),
     SHOP_CHANGE_OPEN("商户状态变化为开张", 12000),
     SHOP_CHANGE_ADVANCE("商户状态变化为预约", 12002),

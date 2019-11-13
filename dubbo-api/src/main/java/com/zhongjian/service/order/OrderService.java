@@ -12,7 +12,7 @@ public interface OrderService {
     //type 1选用积分 extra=null 2选用优惠券 extra = couponId
     Map<String, Object> previewOrCreateOrder(Integer uid, Integer sids[], String type,
                                              Integer extra, String isSelfMention, boolean toCreateOrder,
-                                             Integer addressId, Integer unixTime, Integer isAppointment) throws NDCException;
+                                             Integer addressId, Integer unixTime, Integer isAppointment,String deviceId) throws NDCException;
 
     /**
      * 判断所有商铺是不是指定状态
