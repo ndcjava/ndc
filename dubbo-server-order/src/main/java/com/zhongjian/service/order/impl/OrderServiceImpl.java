@@ -96,7 +96,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			String isSelfMention, boolean toCreateOrder, Integer addressId, Integer unixTime, Integer isAppointment,String deviceId)
 			throws NDCException {
 		boolean marketClick = false;
-		if (toCreateOrder && deviceId != null) {
+		if (toCreateOrder && deviceId != null && !"".equals(deviceId)) {
 			//防刷单
 			//1.优惠券
 			if ("2".equals(type)) {
@@ -181,7 +181,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			storeOrders = new HashMap<String, Object>();
 			storeOrders.put("rider_status", 0);
 			storeOrders.put("self_sufficiency", 0);
-			if (deviceId != null) {
+			if (deviceId != null && !"".equals(deviceId)) {
 				storeOrders.put("deviceId", deviceId);
 			}else {
 				storeOrders.put("deviceId", "");
