@@ -9,7 +9,7 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>dubbo-server-cart</artifactId>
+	<artifactId>dubbo-server</artifactId>
 	<packaging>jar</packaging>
 
 	<name>dubbo-server-cart</name>
