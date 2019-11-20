@@ -1,0 +1,16 @@
+client.appkey=2c9ec0b26e58e5d4c3ab5023c43f3754
+client.appSecret=ea128ef28205
+client.debug=true
+client.dubbo.registry=zookeeper://172.16.42.119:2181
+
+client.pay.ali.charset=UTF-8
+client.pay.ali.signtype=RSA2
+client.pay.ali.paypublickey=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpq0hMXIvjKx12buHYjw06Gpwm2VjpiGx2wPNyHLdow9g3+heNCOstm67VimKNr+Zlh1/bSlfoQcCWvsO4jQ9kbi78oygqlC7VYCl/aOc1xUVvsoBaYB33kpwNn5IG6X9ySX72YjIgsCcbr0RA7fY4wuuOk9TK7wEvnah0MOxbdHovPZHQ9XS1G0+gjLHUjIwyG+b/xTk5KjXnzCaO/lOpohMcDdHwcwwYnnCWBGE2hD8nUsuYqJdh43t4hNVROQiMIn1T7MrV2N/lCVI1WQWTlaTBc7nbr+e3u3Dt5DHqqKUs2hInru+4tP9G8JHRk7mVia24B5A9x5f1Q46b//PQIDAQAB
+client.pay.ali.appid=2019040263777206
+
+client.pay.wxApp.key=f5b59e7df2344667b2a3e0b7fcaf2912
+client.pay.wxApp.appletsKey=f5b59e7df2344667b2a3e0b7fcaf2912
+
+client.extra.createOrderSwitch=off
+client.extra.commissionradio=0.5
+client.extra.nocommissionradio=0.99
