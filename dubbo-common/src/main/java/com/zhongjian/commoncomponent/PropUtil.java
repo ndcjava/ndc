@@ -72,6 +72,10 @@ public class PropUtil {
         setDatacenterId((String) propComponent.getMap().get("server.datacenterid"));
         
         setZkAddress((String) propComponent.getMap().get("spring.dubbo.registry.address"));
+        
+        setMerchantId((String) propComponent.getMap().get("pay.fl.merchantid"));
+        setSubMerchantId((String) propComponent.getMap().get("pay.fl.submerchantid"));
+        setFlNotifyUrl((String) propComponent.getMap().get("pay.fl.url"));
     }
 
     private String yxUrl;
@@ -128,4 +132,10 @@ public class PropUtil {
     private String datacenterId;
 
     private String zkAddress;
+    
+    private String merchantId;
+    private String subMerchantId;
+    private String flNotifyUrl;
+    
+    
 }

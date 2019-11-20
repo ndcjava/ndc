@@ -123,17 +123,17 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 	@Override
 	public Map<String, String> getFlPayData(String outTrandeNo, String totalPrice, String subject) {
 		IPEMRequest ipemReq = new IPEMRequest(); 
-		ipemReq.setMerchantId("20171207112800");
+		ipemReq.setMerchantId(propUtil.getMerchantId());
 		ipemReq.setMerSeqNo(outTrandeNo);
 		ipemReq.setOrderId(outTrandeNo);
 		ipemReq.setTransAmt(new BigDecimal(totalPrice));
 		ipemReq.setMerDateTime(new Date());
 		ipemReq.setCurrency("01");
-		ipemReq.setMerURL("");
+		ipemReq.setMerURL(propUtil.getFlNotifyUrl());
 		ipemReq.setMerURL1("https://www.baidu.com/");
 		List<MerTransDetail> list = new ArrayList<>();
 		MerTransDetail merTransDetail = new MerTransDetail();
-		merTransDetail.setSubMerchantId("TA2017120711280000");
+		merTransDetail.setSubMerchantId(propUtil.getSubMerchantId());
 		merTransDetail.setSubMerSeqNo(outTrandeNo + "1");
 		merTransDetail.setSubMerDateTime(new Date());
 		merTransDetail.setSubTransAmt(new BigDecimal(totalPrice));
