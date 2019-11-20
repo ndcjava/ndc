@@ -9,7 +9,7 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>dubbo-server</artifactId>
+	<artifactId>dubbo-server-pay</artifactId>
 	<packaging>jar</packaging>
 
 	<name>dubbo-server-pay</name>
