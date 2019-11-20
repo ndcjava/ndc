@@ -41,7 +41,7 @@ public class CreateSignatureServlet extends HttpServlet {
 	private GenerateSignatureService generateSignatureService = (GenerateSignatureService) SpringContextHolder
 			.getBean(GenerateSignatureService.class);
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		Map<String, String> formData = FormDataUtil.getFormData(request);
 		AsyncContext asyncContext = request.startAsync();
@@ -79,8 +79,16 @@ public class CreateSignatureServlet extends HttpServlet {
 					String realIp = this.getRealIp(request);
 					result = CreateSignatureServlet.this.handle(uid, business, orderid, payType, realIp);
 					// 返回数据
-					
+					if ("flpay".equals(payType)) {
+						Map<String, Object> data = GsonUtil.GsonToMaps(result);
+						request.setAttribute("Plain", data.get("Plain"));
+						request.setAttribute("Signature", data.get("Signature"));
+						request.getRequestDispatcher("/fl.jsp").forward(request, asyncContext.getResponse());
+					}else {
 						ResponseHandle.wrappedResponse(asyncContext.getResponse(), result);
+					}
+					
+						
 					} catch (IOException e) {
 						try {
 							ResponseHandle.wrappedResponse(asyncContext.getResponse(), result);
@@ -88,6 +96,8 @@ public class CreateSignatureServlet extends HttpServlet {
 							e1.printStackTrace();
 						}
 						log.error("fail createsign: " + e.getMessage());
+					} catch (ServletException e) {
+						e.printStackTrace();
 					}
 					asyncContext.complete();
 				});
@@ -149,7 +159,11 @@ public class CreateSignatureServlet extends HttpServlet {
 				success.setFlag(null);
 				success.setTotal(null);
 				return GsonUtil.GsonString(success);
-			} else {
+				//丰联支付
+			}else if ("flpay".equals(payType)) {
+				return GsonUtil.GsonString(generateSignatureService.getFlPayData(out_trade_no, totalPrice, subject));
+				
+			}else {
 				//微信银行支付
 				return generateSignatureService.getYinHangWxApp(out_trade_no, totalPrice, realIp,body);
 			}

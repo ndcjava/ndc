@@ -10,5 +10,6 @@ public interface GenerateSignatureService {
 
     String getYinHangWxApp(String outTrandeNo, String totalPrice,  String spbillCreateIp,String body);
 
+    Map<String, String> getFlPayData(String outTrandeNo,String totalPrice,String subject);
 
 }

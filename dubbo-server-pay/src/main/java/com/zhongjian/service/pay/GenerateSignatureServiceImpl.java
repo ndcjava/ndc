@@ -6,6 +6,9 @@ import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.domain.AlipayTradeAppPayModel;
 import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.response.AlipayTradeAppPayResponse;
+import com.csii.upay.api.CSIIUPayAPIException;
+import com.csii.upay.api.request.IPEMRequest;
+import com.csii.upay.api.request.MerTransDetail;
 import com.zhongjian.commoncomponent.PropUtil;
 import com.zhongjian.util.*;
 
@@ -116,4 +119,37 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
         }
         return responseResultForBase;
     }
+
+	@Override
+	public Map<String, String> getFlPayData(String outTrandeNo, String totalPrice, String subject) {
+		IPEMRequest ipemReq = new IPEMRequest(); 
+		ipemReq.setMerchantId("20171207112800");
+		ipemReq.setMerSeqNo(outTrandeNo);
+		ipemReq.setOrderId(outTrandeNo);
+		ipemReq.setTransAmt(new BigDecimal(totalPrice));
+		ipemReq.setMerDateTime(new Date());
+		ipemReq.setCurrency("01");
+		ipemReq.setMerURL("");
+		ipemReq.setMerURL1("https://www.baidu.com/");
+		List<MerTransDetail> list = new ArrayList<>();
+		MerTransDetail merTransDetail = new MerTransDetail();
+		merTransDetail.setSubMerchantId("TA2017120711280000");
+		merTransDetail.setSubMerSeqNo(outTrandeNo + "1");
+		merTransDetail.setSubMerDateTime(new Date());
+		merTransDetail.setSubTransAmt(new BigDecimal(totalPrice));
+		list.add(merTransDetail);
+		ipemReq.setMerTransList(list);
+		String plain = "";
+		String signature = "";
+		try {
+			 plain = ipemReq.getPlain();
+			 signature = ipemReq.getSignature();
+		} catch (CSIIUPayAPIException e) {
+		}
+		HashMap<String,String> map = new HashMap<>();
+		map.put("Plain", plain);
+		map.put("Signature", signature);
+		return map;
+		
+	}
 }
