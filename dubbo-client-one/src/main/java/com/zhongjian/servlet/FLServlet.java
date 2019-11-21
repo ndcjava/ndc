@@ -6,17 +6,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.zhongjian.util.PayCommonUtil;
+import com.zhongjian.util.XmlUtil;
 
 import org.apache.log4j.Logger;
 
 import com.zhongjian.common.SpringContextHolder;
-import com.zhongjian.component.PropUtil;
 import com.zhongjian.service.order.OrderService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.TreeMap;
+import java.util.Map;
 
 @WebServlet(value = "/v1/notify/flapp", asyncSupported = false)
 public class FLServlet extends HttpServlet {
@@ -25,7 +24,6 @@ public class FLServlet extends HttpServlet {
 
 	private static Logger log = Logger.getLogger(FLServlet.class);
 
-	private PropUtil propUtil = (PropUtil) SpringContextHolder.getBean(PropUtil.class);
 	
 	private OrderService orderService = (OrderService) SpringContextHolder.getBean(OrderService.class);
 
@@ -36,12 +34,12 @@ public class FLServlet extends HttpServlet {
 		InputStream is = null;
 		try {
 			is = request.getInputStream();
-			String xml = PayCommonUtil.inputStream2String(is, "UTF-8");
-			log.info(xml);
-			TreeMap<String, String> notifyMap = new TreeMap<String, String>(PayCommonUtil.xmlToMap(xml));
-			log.info(notifyMap);
+		    Map<String, String> orderDetail = XmlUtil.flGetOrderNo(is);
+		    log.info(orderDetail);
+//			orderService.handleROrder(orderDetail.get("out_trade_no"), orderDetail.get("total"),"flpay");
+			response.getWriter().print("success");
 		} catch (Exception e) {
-			log.error("微信异步通知发生异常，请注意处理 " + e);
+			log.error("丰联回调发生异常，请注意处理 " + e);
 			response.getWriter().print("failure");
 		}
 
