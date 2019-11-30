@@ -447,15 +447,15 @@ public class OrderDao extends MongoDBDaoBase {
 	
 	//防刷单判断
 	public boolean marketClickfarming (String deviceId) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND  market_activity_price IS NOT NULL";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND (pay_status = 1 or pay_status = 0) AND is_delete = 0 AND market_activity_price IS NOT NULL";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { deviceId,DateUtil.getTodayZeroTime() }, Integer.class);
-		return num > 1?true:false;
+		return num > 0?true:false;
 	}
 	
 	public boolean couponClickfarming (String deviceId) {
-		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND coupon_price IS NOT NULL";
+		String sql = "SELECT COUNT(1) FROM hm_rider_order WHERE deviceId = ? AND ctime > ? AND (pay_status = 1 or pay_status = 0) AND is_delete = 0 AND coupon_price IS NOT NULL";
 		Integer num = jdbcTemplate.queryForObject(sql, new Object[] { deviceId,DateUtil.getTodayZeroTime() }, Integer.class);
-		return num > 1?true:false;
+		return num > 0?true:false;
 	}
 	
 ////-----------------------------------------------------------------------------------------------

@@ -95,6 +95,9 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 	public Map<String, Object> previewOrCreateOrder(Integer uid, Integer[] sids, String type, Integer extra,
 			String isSelfMention, boolean toCreateOrder, Integer addressId, Integer unixTime, Integer isAppointment,String deviceId)
 			throws NDCException {
+		
+		//--方刷单机制--begin
+		//获取marketClick便于后面处理
 		boolean marketClick = false;
 		if (toCreateOrder && deviceId != null && !"".equals(deviceId)) {
 			//防刷单
@@ -110,7 +113,9 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 				}
 			}
 		}
+		//--方刷单机制--end
 		
+		//变量申明--begin
 		Integer isVIp = 0;
 		String vipFavour = "";
 
@@ -154,23 +159,21 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		// 会员单笔limit
 		Double limitOne = 200d;
 		Double limitDayRelief = 10d;
+		BigDecimal toJudgeDeliverFee = BigDecimal.ZERO;
 		// 代码配置获取
 		String memberDeliverfee = propUtil.getMemberDeliverfee();
 		String memberSelfMentionDeliverfee = propUtil.getSelfmentionDeliverfee();
 		String novipmemberSelfMentionDeliverfee = propUtil.getNovipselfmentionDeliverfee();
 		String originalfee = propUtil.getOriginalfee();
+		//变量申明--end
+		
+		//赋值菜场id
 		marketId = orderDao.getMarketId(sids[0]);
-		if (marketId.equals(190) || marketId.equals(285)) {
-			originalfee = "0";
-			memberSelfMentionDeliverfee = "0";
-			novipmemberSelfMentionDeliverfee = "0";
-		}
+
 		//根据菜场改originalfee（菜场运费）
 		//根据菜场改memberSelfMentionDeliverfee（菜场自提费）
 		//可以根据addressId获取用户地址和菜场地址比对按比例设定配送费
 		
-		String deliverfee = originalfee;
-		BigDecimal deliverfeeBigDecimal = new BigDecimal(originalfee);
 		Integer orderId = null;
 		int createTime = (int) (System.currentTimeMillis() / 1000);
 		// 小订单拼接
@@ -188,7 +191,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			}
 			storeIds = new ArrayList<String>();
 		}
-
+		BigDecimal mRatio = BigDecimal.ZERO;
 		// 计算商品价格（已算商户活动）-----start
 		List<Map<String, Object>> storeList = new ArrayList<Map<String, Object>>();
 		for (int i = 0; i < sids.length; i++) {
@@ -294,6 +297,8 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			store.put("originPrice", "￥" + storeAmountBigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).toString());
 			store.put("totalPrice", "￥" + actualStoreAmountBigDecimal.toString());
 			// 计算商户优惠的价格
+			Integer pid = Integer.valueOf(sid);
+			mRatio = orderDao.getMratio(pid);
 			if (toCreateOrder) {
 				storeActivityPrice = storeActivityPrice
 						.add(storeAmountBigDecimal.subtract(actualStoreAmountBigDecimal));
@@ -304,9 +309,6 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 				} else {
 					orderJoint.append("|").append(smallOrderSn);
 				}
-
-				Integer pid = Integer.valueOf(sid);
-				BigDecimal mRatio = orderDao.getMratio(pid);
 				BigDecimal finalRatio = BigDecimal.ZERO;
 				if (mRatio != null) {
 					BigDecimal ratio = orderDao.getRatio();
@@ -340,10 +342,42 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			storeList.add(store);
 			storesAmountBigDecimal = storesAmountBigDecimal.add(actualStoreAmountBigDecimal);
 		}
+		toJudgeDeliverFee = storesAmountBigDecimal;
 		storesAmountString = storesAmountBigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
 		needPay = storesAmountBigDecimal;
 		// 计算商品价格（已算商户活动）-----end
-
+		
+		//配送费调整--start
+		if (marketId.equals(190) || marketId.equals(285)) {
+			originalfee = "0";//原始配送费
+			memberSelfMentionDeliverfee = "0";//会员自提配送费
+			novipmemberSelfMentionDeliverfee = "0";//普通自提配送费
+		}else {
+			if (mRatio != null) {
+				BigDecimal up = new BigDecimal("58");
+				BigDecimal down = new BigDecimal("30");
+				if (toJudgeDeliverFee.compareTo(up) == 1) {
+					originalfee = "0";
+					memberSelfMentionDeliverfee = "0";
+					novipmemberSelfMentionDeliverfee = "0";
+				}else if (toJudgeDeliverFee.compareTo(down) == -1) {
+					originalfee = "4";
+				}else{
+					originalfee = "2";
+				}
+			}else {
+				
+			}
+			
+		}
+		//配送费调整--end
+		//初始化配送费
+		String deliverfee = originalfee;
+		BigDecimal deliverfeeBigDecimal = new BigDecimal(originalfee);
+		
+		
+		
+		
 		// 市场开始后结束时间
 		BigDecimal priceForCoupon = needPay;
 		// 检测市场活动--start
@@ -428,6 +462,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			integralCanUse = 1;
 		}
 		Integer vipStatus = (Integer) (uMap.get("vip_status"));
+	
 		// 动态获取VIP参数 --start
 		Map<String, Object> config = getConfigByUidAndStatus(uid, vipStatus);
 		limitDayRelief = config.get("limitDayRelief") == null ? limitDayRelief : (Double) config.get("limitDayRelief");
@@ -558,7 +593,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 							vipFavourRiderOrder = vipFavourable;
 							needPay = BigDecimal.ZERO;
 						}
-						if (ext.equals(1) && deliverfeeBigDecimal.compareTo(new BigDecimal("3")) >0) {
+						if (mRatio == null && ext.equals(1) && deliverfeeBigDecimal.compareTo(new BigDecimal("3")) >0) {
 							// 配送券
 							deliverfeeBigDecimal = new BigDecimal("3");
 							deliverfee = "￥3";
