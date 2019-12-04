@@ -851,6 +851,10 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 				openSize++;
 			}
 		}
+		if(marketDao.isMarketCanBy(marketId).equals(0)) {
+			resultDTO.setData("1");
+			return resultDTO;
+		}
 		if (isAppointMentSize == 0 && openSize == 0) {
 			resultDTO.setData(resultDTO.getData() + "_" + marketId);
 			return resultDTO;// 状态监测通过
