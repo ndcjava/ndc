@@ -217,8 +217,8 @@ public class OrderDao extends MongoDBDaoBase {
 	public Integer addHmRiderOrder(Map<String, Object> map) {
 		final String sql = "INSERT INTO hm_rider_order (rider_sn,order_sn,uid,marketid,rid,pay_status,address_id,rider_pay,"
 				+ "couponid,type_pay,totalPrice,pay_time,service_time,order_time,finish_time,ctime,integral,is_appointment,end_time,"
-				+ "original_price,out_trade_no,coupon_price,market_activity_price,store_activity_price,vip_relief,remark,test,rider_status,self_sufficiency,deviceId) VALUES (?,?,?,"
-				+ "?,?,?,?,?,?,null,?,?,?,null,null,?,?,?,null,?,?,?,?,?,?,null,null,?,?,?)";
+				+ "original_price,out_trade_no,coupon_price,market_activity_price,store_activity_price,vip_relief,remark,test,rider_status,self_sufficiency,deviceId,commission_price) VALUES (?,?,?,"
+				+ "?,?,?,?,?,?,null,?,?,?,null,null,?,?,?,null,?,?,?,?,?,?,null,null,?,?,?,?)";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		jdbcTemplate.update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
@@ -247,6 +247,7 @@ public class OrderDao extends MongoDBDaoBase {
 				ps.setInt(22, (Integer) map.get("rider_status"));
 				ps.setInt(23, (Integer) map.get("self_sufficiency"));
 				ps.setString(24, (String) map.get("deviceId"));
+				ps.setBigDecimal(25, (BigDecimal) map.get("commission_price"));
 				return ps;
 			}
 		}, keyHolder);
