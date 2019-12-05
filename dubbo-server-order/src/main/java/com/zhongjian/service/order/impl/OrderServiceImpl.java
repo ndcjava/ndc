@@ -133,6 +133,8 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 		String needPayString = "";
 		// 各商户总价和
 		BigDecimal storesAmountBigDecimal = BigDecimal.ZERO;
+		//各商户收佣后总价和
+		BigDecimal storesAmountBigDecimalTake =BigDecimal.ZERO;
 		String storesAmountString = "";
 		// 各商户参与优惠总价和
 		BigDecimal storesAmountBigDecimalForFavorable = BigDecimal.ZERO;
@@ -208,6 +210,8 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			BigDecimal storeAmountBigDecimal = BigDecimal.ZERO;
 			// 商户活动后价格
 			BigDecimal actualStoreAmountBigDecimal = BigDecimal.ZERO;
+			// 商户活动并收佣后价格
+			BigDecimal actualStoreAmountBigDecimalTake = BigDecimal.ZERO;
 			List<Map<String, Object>> singleStoreInfoList = orderDao.getBasketByUidAndSid(sids[i], uid);
 			int unFavorable = 0;// 默认参与市场优惠
 			String sname = "";
@@ -322,7 +326,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 				}
 				BigDecimal computeRatio = new BigDecimal("1").subtract(finalRatio).setScale(4,
 						BigDecimal.ROUND_HALF_UP);
-				BigDecimal actualStoreAmountBigDecimalTake = computeRatio.multiply(actualStoreAmountBigDecimal)
+				actualStoreAmountBigDecimalTake = computeRatio.multiply(actualStoreAmountBigDecimal)
 						.setScale(2, BigDecimal.ROUND_HALF_UP);
 				storeOrderInfo.put("pid", Integer.valueOf(sid));
 				storeOrderInfo.put("order_sn", smallOrderSn);
@@ -341,6 +345,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			}
 			storeList.add(store);
 			storesAmountBigDecimal = storesAmountBigDecimal.add(actualStoreAmountBigDecimal);
+			storesAmountBigDecimalTake = storesAmountBigDecimalTake.add(actualStoreAmountBigDecimalTake);
 		}
 		toJudgeDeliverFee = storesAmountBigDecimal;
 		storesAmountString = storesAmountBigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
@@ -649,6 +654,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			storeOrders.put("service_time", unixTime);
 			storeOrders.put("is_appointment", isAppointment);
 			storeOrders.put("original_price", storesAmountBigDecimal);
+			storeOrders.put("commission_price", storesAmountBigDecimalTake.subtract(storesAmountBigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP));
 			String outTradeNo = String.valueOf(idWorkers.getOutTradeIdWork().nextId());
 			storeOrders.put("out_trade_no", outTradeNo);// 生成订单的时候三方号同时生成
 			storeOrders.put("market_activity_price",
