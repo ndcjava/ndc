@@ -1340,6 +1340,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 					storeOrders.put("store_activity_price", BigDecimal.ZERO);
 					storeOrders.put("vip_relief", BigDecimal.ZERO);
 					storeOrders.put("pay_status", 0);
+					storeOrders.put("commission_price", priceAmount.subtract(actualStoreAmountBigDecimalTake).setScale(2, BigDecimal.ROUND_HALF_UP));
 					Integer roid = orderDao.addHmRiderOrder(storeOrders);
 					Object sobj = storeOrders.get(String.valueOf(sid));
 					if (sobj != null) {
