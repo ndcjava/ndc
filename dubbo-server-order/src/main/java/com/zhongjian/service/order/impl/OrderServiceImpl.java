@@ -654,7 +654,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			storeOrders.put("service_time", unixTime);
 			storeOrders.put("is_appointment", isAppointment);
 			storeOrders.put("original_price", storesAmountBigDecimal);
-			storeOrders.put("commission_price", storesAmountBigDecimalTake.subtract(storesAmountBigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP));
+			storeOrders.put("commission_price", storesAmountBigDecimal.subtract(storesAmountBigDecimalTake).setScale(2, BigDecimal.ROUND_HALF_UP));
 			String outTradeNo = String.valueOf(idWorkers.getOutTradeIdWork().nextId());
 			storeOrders.put("out_trade_no", outTradeNo);// 生成订单的时候三方号同时生成
 			storeOrders.put("market_activity_price",
