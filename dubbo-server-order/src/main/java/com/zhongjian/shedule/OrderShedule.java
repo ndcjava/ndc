@@ -61,7 +61,7 @@ private OrderService orderService;
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		this.orderShedule();
-		this.withdraw();
+//		this.withdraw();
 	}
 	
 	
