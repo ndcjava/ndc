@@ -32,5 +32,10 @@ public class MarketDao {
 		}
 		return resMap;
 	}
+	
+	public Integer isMarketCanBy(Integer marketId) {
+		String sql = "SELECT can_buy from hm_market where id = ?";
+		return jdbcTemplate.queryForObject(sql, new Object[] { marketId }, Integer.class);
+	}
 
 }
