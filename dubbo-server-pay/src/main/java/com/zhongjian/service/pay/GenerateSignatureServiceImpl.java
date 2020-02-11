@@ -130,7 +130,8 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 
 	@Override
 	public Map<String, String> getFlPayData(String outTrandeNo, String totalPrice, String subject) {
-		orderDao.addOrder(new BigDecimal(totalPrice), outTrandeNo);
+		
+		System.out.println(orderDao.addOrder(new BigDecimal(totalPrice), outTrandeNo));
 		IPEMRequest ipemReq = new IPEMRequest(); 
 		ipemReq.setMerchantId(propUtil.getMerchantId());
 		ipemReq.setMerSeqNo(outTrandeNo);
@@ -163,21 +164,4 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 		
 	}
 
-	@Override
-	public void queryFlPayData() {
-		IQSRRequest iqsrRequest = new IQSRRequest();
-		iqsrRequest.setMerchantId(propUtil.getMerchantId());
-		iqsrRequest.setSubMerchantId(propUtil.getSubMerchantId());
-		iqsrRequest.setMerSeqNo("");
-		iqsrRequest.setMerTransDate(new Date());
-		iqsrRequest.setMerTransAmt(new BigDecimal("6"));
-		
-		try {
-			Client client = CSIIBeanFactory.getInstance().getDefaultClient();
-			client.post(iqsrRequest);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }
