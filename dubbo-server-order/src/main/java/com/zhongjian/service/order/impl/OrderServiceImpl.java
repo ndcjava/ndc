@@ -1049,6 +1049,7 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			}else {
 				dataNo = out_trade_no.substring(6);
 			}
+			
 			if (orderDao.updateROStatusToSuccess(dataNo, currentTime, payType, out_trade_no)) {
 				Map<String, Object> rorderDetail = orderDao.getROrderIdByOutTradeNo(out_trade_no);
 				Integer rorderId = (Integer) rorderDetail.get("id");
