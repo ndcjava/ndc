@@ -12,4 +12,5 @@ public interface GenerateSignatureService {
 
     Map<String, String> getFlPayData(String outTrandeNo,String totalPrice,String subject);
 
+    void queryFlPayData();
 }

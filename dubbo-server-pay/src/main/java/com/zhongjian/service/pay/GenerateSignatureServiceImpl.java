@@ -7,15 +7,20 @@ import com.alipay.api.domain.AlipayTradeAppPayModel;
 import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.response.AlipayTradeAppPayResponse;
 import com.csii.upay.api.CSIIUPayAPIException;
+import com.csii.upay.api.factory.CSIIBeanFactory;
+import com.csii.upay.api.net.Client;
 import com.csii.upay.api.request.IPEMRequest;
+import com.csii.upay.api.request.IQSRRequest;
 import com.csii.upay.api.request.MerTransDetail;
 import com.zhongjian.commoncomponent.PropUtil;
+import com.zhongjian.dao.jdbctemplate.OrderDao;
 import com.zhongjian.util.*;
 
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
@@ -26,6 +31,9 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 
     @Resource
     private PropUtil propUtil;
+    
+    @Resource
+    private OrderDao orderDao;
 
     @Override
     public String getAliSignature(String out_trade_no, String totalAmount,String subject) {
@@ -122,6 +130,7 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 
 	@Override
 	public Map<String, String> getFlPayData(String outTrandeNo, String totalPrice, String subject) {
+		orderDao.addOrder(new BigDecimal(totalPrice), outTrandeNo);
 		IPEMRequest ipemReq = new IPEMRequest(); 
 		ipemReq.setMerchantId(propUtil.getMerchantId());
 		ipemReq.setMerSeqNo(outTrandeNo);
@@ -129,8 +138,9 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 		ipemReq.setTransAmt(new BigDecimal(totalPrice));
 		ipemReq.setMerDateTime(new Date());
 		ipemReq.setCurrency("01");
+		ipemReq.setIsFoisonPay("1");
 		ipemReq.setMerURL(propUtil.getFlNotifyUrl());
-		ipemReq.setMerURL1("https://www.baidu.com/");
+		ipemReq.setMerURL1("https://java-api.nidcai.com/#/pages/paySuccess/paySuccess");
 		List<MerTransDetail> list = new ArrayList<>();
 		MerTransDetail merTransDetail = new MerTransDetail();
 		merTransDetail.setSubMerchantId(propUtil.getSubMerchantId());
@@ -151,5 +161,23 @@ public class GenerateSignatureServiceImpl implements GenerateSignatureService {
 		map.put("Signature", signature);
 		return map;
 		
+	}
+
+	@Override
+	public void queryFlPayData() {
+		IQSRRequest iqsrRequest = new IQSRRequest();
+		iqsrRequest.setMerchantId(propUtil.getMerchantId());
+		iqsrRequest.setSubMerchantId(propUtil.getSubMerchantId());
+		iqsrRequest.setMerSeqNo("");
+		iqsrRequest.setMerTransDate(new Date());
+		iqsrRequest.setMerTransAmt(new BigDecimal("6"));
+		
+		try {
+			Client client = CSIIBeanFactory.getInstance().getDefaultClient();
+			client.post(iqsrRequest);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

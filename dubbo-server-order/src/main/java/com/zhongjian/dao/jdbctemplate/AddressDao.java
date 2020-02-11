@@ -41,8 +41,6 @@ public class AddressDao {
 		jdbcTemplate.update(sql,addressId,uid,addressId,uid);
 	}
 	public static void name(int a) {
-		
-		
 			System.out.println(0);
 			if (a == 1) {
 				System.out.println(1);
@@ -57,11 +55,7 @@ public class AddressDao {
 				
 			} 
 			
-	
 		
-	}
-	public static void main(String[] args) {
-		name(0);
 	}
 	
 }

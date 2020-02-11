@@ -7,7 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-    <form id="form1" name="form1" action="http://47.99.57.122:8388/paygate/main" method="post">
+    <form id="form1" name="form1" action="https://epay1.zj96596.com/paygate/main" method="post">
         <input type="hidden" name="TransId" value="IPER"/>
     　　  <input type="hidden" name="Plain" value='<%=request.getAttribute("Plain")%>'>
     　　  <input type="hidden" name="Signature" value='<%=request.getAttribute("Signature")%>'>

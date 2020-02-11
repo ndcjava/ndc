@@ -1,11 +1,14 @@
 package com.zhongjian.service.user;
 
+import com.zhongjian.commoncomponent.PropUtil;
 import com.zhongjian.dao.entity.cart.user.UserBean;
 import com.zhongjian.dao.framework.impl.HmBaseService;
 import com.zhongjian.dao.jdbctemplate.CouponDao;
+import com.zhongjian.dao.jdbctemplate.UserDao;
 import com.zhongjian.dto.user.query.UserQueryDTO;
 import com.zhongjian.dto.user.result.UserCopResultDTO;
 import com.zhongjian.dto.user.result.UserResultDTO;
+import com.zhongjian.util.RsaEncoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,12 @@ public class UserServiceImpl extends HmBaseService<UserBean, Integer> implements
 
 	@Autowired
 	private CouponDao couponDao;
+	
+	@Autowired
+	private UserDao UserDao;
+	
+	@Autowired
+	private PropUtil propUtil;
 
 	@Override
 	public Integer getUidByLoginToken(String loginToken) {
@@ -143,5 +152,15 @@ public class UserServiceImpl extends HmBaseService<UserBean, Integer> implements
 		}
 		return findCouponByUid;
 
+	}
+
+	@Override
+	public String deCoderPhone(String enCoderPhone) {
+		return RsaEncoder.decrypt(enCoderPhone, propUtil.getFlPriveteKey());
+	}
+
+	@Override
+	public Boolean bindFlOpenId(Integer uid, String openId) {
+		return UserDao.updateOpenIdByUid(uid, openId);
 	}
 }

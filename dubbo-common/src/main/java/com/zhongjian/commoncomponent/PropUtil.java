@@ -76,6 +76,8 @@ public class PropUtil {
         setMerchantId((String) propComponent.getMap().get("pay.fl.merchantid"));
         setSubMerchantId((String) propComponent.getMap().get("pay.fl.submerchantid"));
         setFlNotifyUrl((String) propComponent.getMap().get("pay.fl.url"));
+        setFlPriveteKey((String) propComponent.getMap().get("pay.fl.privatekey"));
+       
     }
 
     private String yxUrl;
@@ -136,6 +138,6 @@ public class PropUtil {
     private String merchantId;
     private String subMerchantId;
     private String flNotifyUrl;
-    
+    private String flPriveteKey;
     
 }

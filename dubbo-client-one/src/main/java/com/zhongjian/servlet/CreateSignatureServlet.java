@@ -161,7 +161,7 @@ public class CreateSignatureServlet extends HttpServlet {
 				return GsonUtil.GsonString(success);
 				//丰联支付
 			}else if ("flpay".equals(payType)) {
-				return GsonUtil.GsonString(generateSignatureService.getFlPayData(out_trade_no, totalPrice, subject));
+				return GsonUtil.GsonString(generateSignatureService.getFlPayData(out_trade_no.substring(6), totalPrice, subject));
 				
 			}else {
 				//微信银行支付

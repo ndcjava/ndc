@@ -37,5 +37,10 @@ public interface UserService {
 	 */
 	List<UserCopResultDTO> getCVCouponByUid(UserQueryDTO userQueryDTO);
 
+	
+	String deCoderPhone(String enCoderPhone);
+	
+	Boolean bindFlOpenId(Integer uid,String openId);
+	
 
 }
