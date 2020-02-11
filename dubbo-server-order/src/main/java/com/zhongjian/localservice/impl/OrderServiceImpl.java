@@ -236,8 +236,5 @@ public class OrderServiceImpl extends HmBaseService<OrderRiderOrderBean, Integer
 		}
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(new BigDecimal("32.54").toPlainString());
-	}
 
 }
