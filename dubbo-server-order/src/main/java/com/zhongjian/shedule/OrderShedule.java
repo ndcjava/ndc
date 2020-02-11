@@ -19,6 +19,17 @@ public class OrderShedule extends TaskBase implements ApplicationListener<Contex
 private OrderService orderService;
 
 
+
+void flOrderShedule() {
+	// 定时执行任务，每隔1分钟钟执行一次
+	executeShedule(new Runnable() {
+		@Override
+		public void run() {
+			orderService.toHandleFlOrder();
+		}
+	}, 0, 60);
+}
+
 	void orderShedule() {
 		// 定时执行任务，每隔5分钟钟执行一次
 		executeShedule(new Runnable() {

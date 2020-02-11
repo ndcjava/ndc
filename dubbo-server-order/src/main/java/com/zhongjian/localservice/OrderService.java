@@ -7,6 +7,8 @@ public interface OrderService {
 
 	void todoSth();
 	
+	void toHandleFlOrder();
+	
 	void withdraw() throws URISyntaxException ;
 	
 	boolean changeDelieverModel(Integer uoid);

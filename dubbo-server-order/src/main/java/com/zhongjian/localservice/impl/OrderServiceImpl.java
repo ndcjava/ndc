@@ -1,7 +1,10 @@
 package com.zhongjian.localservice.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.csii.upay.api.factory.CSIIBeanFactory;
+import com.csii.upay.api.net.Client;
+import com.csii.upay.api.request.IQSRRequest;
+import com.csii.upay.api.response.IQSRResponse;
+import com.mysql.cj.x.protobuf.MysqlxCrud.Order;
 import com.zhongjian.commoncomponent.PropUtil;
 import com.zhongjian.dao.entity.order.rider.OrderRiderOrderBean;
 import com.zhongjian.dao.framework.impl.HmBaseService;
@@ -25,6 +28,7 @@ import java.net.URISyntaxException;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +50,9 @@ public class OrderServiceImpl extends HmBaseService<OrderRiderOrderBean, Integer
     
     @Resource
     private OrderTask orderTask;
+    
+    @Resource
+    private OrderDao orderDao;
     
     
     @Override
@@ -199,5 +206,38 @@ public class OrderServiceImpl extends HmBaseService<OrderRiderOrderBean, Integer
 		//拿到login_token,bankid,money可以发起提现了！
 	}
 
+	@Override
+	public void toHandleFlOrder() {
+		List<Map<String, Object>> flOrders = orderDao.getHmFlOrder();
+		Client client = CSIIBeanFactory.getInstance().getDefaultClient();
+		IQSRResponse iqsrResponse = null;
+       for (Iterator<Map<String, Object>> iterator = flOrders.iterator(); iterator.hasNext();) {
+    	   Map<String, Object> map = (Map<String, Object>) iterator.next();
+    	   String orderNo = (String) map.get("order_no");
+    	   BigDecimal totalPrice = (BigDecimal) map.get("total_price");
+    		IQSRRequest iqsrRequest = new IQSRRequest();
+    		iqsrRequest.setMerchantId(propUtil.getMerchantId());
+    		iqsrRequest.setSubMerchantId(propUtil.getSubMerchantId());
+    		iqsrRequest.setMerSeqNo(orderNo);
+    		iqsrRequest.setMerTransDate(new Date());
+    		iqsrRequest.setMerTransAmt(totalPrice);
+    		
+    		try {
+    			iqsrResponse = client.post(iqsrRequest);
+    			if ("000000".equals(iqsrResponse.getRespCode())) {
+    				if ("0001".equals(iqsrResponse.getTransStatus())) {
+						orderService.handleROrder(orderNo, totalPrice.toPlainString(), "flpay");
+					}
+    			}
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	   
+		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(new BigDecimal("32.54").toPlainString());
+	}
 
 }

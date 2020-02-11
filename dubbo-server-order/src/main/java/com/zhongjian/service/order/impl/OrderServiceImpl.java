@@ -1043,9 +1043,12 @@ public class OrderServiceImpl extends HmBaseService<OrderShopownBean, Integer> i
 			return true;
 		} else {
 			//接入顺丰派单
-			
-			
-			String dataNo = out_trade_no.substring(6);
+			String dataNo = "";
+			if (payType.equals("flpay")) {
+				dataNo = out_trade_no;
+			}else {
+				dataNo = out_trade_no.substring(6);
+			}
 			if (orderDao.updateROStatusToSuccess(dataNo, currentTime, payType, out_trade_no)) {
 				Map<String, Object> rorderDetail = orderDao.getROrderIdByOutTradeNo(out_trade_no);
 				Integer rorderId = (Integer) rorderDetail.get("id");

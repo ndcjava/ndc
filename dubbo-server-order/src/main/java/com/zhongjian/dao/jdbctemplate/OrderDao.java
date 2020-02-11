@@ -62,6 +62,12 @@ public class OrderDao extends MongoDBDaoBase {
 		List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql, new Object[] { uid, sid });
 		return resultList;
 	}
+	
+	public List<Map<String, Object>> getHmFlOrder() {
+		String sql = "SELECT order_no, total_price FROM hm_fl_order WHERE num < 3 AND query_time > 0";
+		List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql);
+		return resultList;
+	}
 
 	// delete baskets
 	public boolean deleteBasketBySid(Integer[] sids, Integer uid) {
