@@ -64,11 +64,16 @@ public class OrderDao extends MongoDBDaoBase {
 	}
 	
 	public List<Map<String, Object>> getHmFlOrder() {
-		String sql = "SELECT order_no, total_price FROM hm_fl_order WHERE num < 3 AND query_time > 0";
+		String sql = "SELECT id,order_no, total_price FROM hm_fl_order WHERE num < 3 AND query_time > 0";
 		List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql);
 		return resultList;
 	}
 
+	public boolean updateFlOrderNum(Integer id) {
+		String sql = "update hm_fl_order set num = num + 1 where id = ?";
+		return jdbcTemplate.update(sql, id) > 0 ? true : false;
+	}
+	
 	// delete baskets
 	public boolean deleteBasketBySid(Integer[] sids, Integer uid) {
 		StringBuilder sidString = new StringBuilder();

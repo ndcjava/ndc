@@ -215,6 +215,7 @@ public class OrderServiceImpl extends HmBaseService<OrderRiderOrderBean, Integer
     	   Map<String, Object> map = (Map<String, Object>) iterator.next();
     	   String orderNo = (String) map.get("order_no");
     	   BigDecimal totalPrice = (BigDecimal) map.get("total_price");
+    	   orderDao.updateFlOrderNum((Integer) map.get("id"));
     		IQSRRequest iqsrRequest = new IQSRRequest();
     		iqsrRequest.setMerchantId(propUtil.getMerchantId());
     		iqsrRequest.setSubMerchantId(propUtil.getSubMerchantId());
